@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Certifications</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      overflow: hidden;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .carousel-wrapper {
+      perspective: 1500px;
+      width: 80vw;
+      height: 80vh;
+      position: relative;
+    }
+
+    .carousel {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 1s ease;
+      cursor: pointer;
+    }
+
+    .card {
+      position: absolute;
+      border-radius: 15px;
+      overflow: hidden;
+      transform-origin: center center;
+      transition: transform 0.5s ease, z-index 0.5s;
+    }
+
+    .card img {
+      width: 100%;
+      object-fit: cover;
+      border-radius: 15px 15px 0 0;
+      display: block;
+    }
+
+    .card-content h3 {
+      margin: 0 0 5px;
+      font-size: 1.1rem;
+    }
+
+    .card-content p {
+      margin: 0 0 10px;
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .card-content button {
+      width: 70px;
+      height: 30px;
+      color: white;
+      border-radius: 5px;
+      font-family: 'Lato', sans-serif;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.6rem;
+      box-shadow:
+        inset 2px 2px 2px rgba(255,255,255,.5),
+        7px 7px 20px rgba(0,0,0,.1),
+        4px 4px 5px rgba(0,0,0,.1);
+      outline: none;
+    }
+
+    .card-content button:hover {
+      box-shadow:
+        4px 4px 6px rgba(255,255,255,.5),
+        -4px -4px 6px rgba(116,125,136,.5),
+        inset -4px -4px 6px rgba(255,255,255,.2),
+        inset 4px 4px 6px rgba(0,0,0,.4);
+    }
+
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      display: none;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 700px;
+      text-align: center;
+      animation: zoomIn 0.3s ease;
+    }
+
+    .modal-content img {
+      width: 100%;
+      max-height: 400px;
+      object-fit: contain;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .modal-content h2 {
+      margin-bottom: 10px;
+    }
+
+    .modal-content p {
+      color: #444;
+    }
+
+    .modal-content button {
+      margin-top: 15px;
+      padding: 8px 16px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    @keyframes zoomIn {
+      from {
+        transform: scale(0.7);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="carousel-wrapper" onclick="handleCarouselClick(event)">
+    <div class="carousel" id="carousel"></div>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-content" id="modalContent">
+      <img id="modalImage" src="" alt="Large View" />
+      <h2 id="modalTitle"></h2>
+      <p id="modalDesc"></p>
+      <button onclick="closeModal()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const carousel = document.getElementById('carousel');
+    const modal = document.getElementById('modal');
+    const modalImage = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDesc = document.getElementById('modalDesc');
+
+     const cardsData = [
+      { title: "SQL Mastery", desc: "Udemy · Aug 2024", img: "images/sql.jpg" },
+      { title: "Python Bootcamp", desc: "Udemy · Nov 2021", img: "images/python2.jpg" },
+      { title: "Python Mastery", desc: "Udemy · Aug 2024", img: "images/python.jpg" },
+      { title: "Generative AI", desc: "Udemy · Aug 2024", img: "images/genai.jpg" },
+      { title: "Cloud Computing", desc: "NPTEL · Jan-Apr 2024", img: "images/cloud_computing.jpg" },
+      { title: "Introduction to IoT", desc: "NPTEL · Jul-Oct 2024", img: "images/iot.jpg" },
+      { title: "Gen AI 101", desc: "INDIUM · Aug 2024", img: "images/genai101.jpg" },
+      { title: "SQL Basics", desc: "Hackerrank · Aug 2023", img: "images/sql_basic.jpg" },
+      { title: "SQL Intermediate", desc: "Hackerrank · May 2025", img: "images/sql_intermediate.jpg" },
+      { title: "Python Basics", desc: "Hackerrank · May 2025", img: "images/python_basic.jpg" },
+      { title: "Problem Solving", desc: "Hackerrank · Aug 2023", img: "images/problem_solving_basic.jpg" },
+      { title: "AI with Python", desc: "Udacity · Feb 2024", img: "images/udacity.jpeg"},
+      { title: "Tableau", desc: "Udemy · Sep 2024", img: "images/tableau.jpg" },
+      { title: "PWC Lunchpad program", desc: "PWC · July 2024", img: "images/pwc.jpg" },
+    ];
+
+    const totalCards = cardsData.length;
+    const angleBetween = 360 / totalCards;
+    let currentRotation = 0;
+
+    const pastelColors = ['#CDC1FF', '#9EC6F3', '#F7CFD8'];
+    const customBorderColors = ['#BA94D1', '#D1E9F6', '#FFCCEA'];
+    const buttonGradients = [
+      'linear-gradient(90deg, #8e44ad, #a969b3, #8e44ad)',
+      'linear-gradient(90deg, #305c8a, #4f83c2, #305c8a)',
+      'linear-gradient(90deg, #FFDCDC, #F49BAB, #FFDCDC)',
+    ];
+
+    // Dynamic sizing
+    const baseZ = 450;
+    const translateZ = baseZ + (totalCards > 6 ? totalCards * 12 : totalCards * 25);
+    const cardWidth = Math.max(180, 320 - totalCards * 5);
+    const cardHeight = Math.round(cardWidth * 1.2);
+
+    cardsData.forEach((card, index) => {
+      const angle = angleBetween * index;
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.style.transform = `rotateY(${angle}deg) translateZ(${translateZ}px)`;
+
+      const colorIndex = index % pastelColors.length;
+
+      div.style.background = pastelColors[colorIndex];
+      div.style.border = `2px solid ${customBorderColors[colorIndex]}`;
+      div.style.boxShadow = `
+        0 0 5px ${customBorderColors[colorIndex]},
+        0 0 10px ${customBorderColors[colorIndex]},
+        0 0 20px ${customBorderColors[colorIndex]},
+        0 0 30px ${customBorderColors[colorIndex]}
+      `;
+
+      div.style.width = `${cardWidth}px`;
+      div.style.height = `${cardHeight}px`;
+      div.style.top = `calc(50% - ${cardHeight / 2}px)`;
+      div.style.left = `calc(50% - ${cardWidth / 2}px)`;
+
+      div.innerHTML = `
+        <img src="${card.img}" alt="${card.title}" style="height:${cardHeight * 0.6}px;" />
+        <div class="card-content" style="padding: ${Math.max(10, cardWidth * 0.08)}px;">
+          <h3>${card.title}</h3>
+          <p>${card.desc}</p>
+          <button 
+            style="background: ${buttonGradients[colorIndex]}"
+            onclick="event.stopPropagation(); showModal('${card.img}', '${card.title}', '${card.desc}')"
+          >
+            View More
+          </button>
+        </div>
+      `;
+
+      carousel.appendChild(div);
+    });
+
+    function handleCarouselClick(event) {
+      const wrapper = event.currentTarget;
+      const clickX = event.clientX;
+      const midX = wrapper.getBoundingClientRect().left + wrapper.offsetWidth / 2;
+
+      if (clickX < midX) {
+        currentRotation += angleBetween;
+      } else {
+        currentRotation -= angleBetween;
+      }
+
+      carousel.style.transform = `rotateY(${currentRotation}deg)`;
+    }
+
+    function showModal(img, title, desc) {
+      modalImage.src = img;
+      modalTitle.textContent = title;
+      modalDesc.textContent = desc;
+      modal.classList.add('active');
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+    }
+  </script>
+
+</body>
+</html>
